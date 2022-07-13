@@ -2,8 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"log"
 )
 
 type InstallmentPeriod struct {
@@ -18,29 +16,6 @@ type Product struct {
 }
 
 type Products []Product
-
-func InitProduct() Products {
-	var products Products
-	products = append(products, Product{
-		Category: "Smartphone",
-		InstallmentFreePeriod: InstallmentPeriod{
-			From: 3,
-			To:   9,
-		},
-		Percentage: 3,
-	})
-
-	products = append(products, Product{
-		Category: "PC",
-		InstallmentFreePeriod: InstallmentPeriod{
-			From: 3,
-			To:   12,
-		},
-		Percentage: 4,
-	})
-
-	return products
-}
 
 type Calculator struct {
 	products  Products
@@ -59,6 +34,10 @@ func NewCalculator(products Products, interval []int) (Calculator, error) {
 }
 
 func (c *Calculator) GetAmount(category string, sum, period int) (int, error) {
+	if sum < 0 {
+		return 0, errors.New("sum must be positive")
+	}
+
 	var product *Product
 	for _, v := range c.products {
 		if v.Category == category {
@@ -102,23 +81,8 @@ func (c *Calculator) GetAmount(category string, sum, period int) (int, error) {
 		second++
 	}
 
-	fmt.Println(first, second)
-
 	distance := second - first
 	percentage := distance * product.Percentage
 
 	return sum + sum*percentage/100, nil
-}
-
-func main() {
-	products := InitProduct()
-	intervals := []int{3, 6, 9, 12, 18, 24}
-
-	calculator, err := NewCalculator(products, intervals)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	s, err := calculator.GetAmount("Smartphone", 1000, 24)
-	fmt.Println(s, err)
 }
